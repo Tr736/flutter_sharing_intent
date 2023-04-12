@@ -92,7 +92,6 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
               && (intent.action == Intent.ACTION_SEND
               || intent.action == Intent.ACTION_SEND_MULTIPLE) -> { // Sharing images or videos
 
-
         val value = getSharingUris(intent)
         if (initial) initialSharing = value
         latestSharing = value
@@ -101,7 +100,6 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
       }
       (intent.type == null || intent.type?.startsWith("text") == true)
               && intent.action == Intent.ACTION_SEND -> { // Sharing text
-
         val value = getSharingText(intent)
         if (initial) initialSharing = value
         latestSharing = value
@@ -112,7 +110,7 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
       intent.action == Intent.ACTION_VIEW -> { // Opening URL
         val value = JSONArray().put(
           JSONObject()
-            .put("value", intent.dataString)
+            .put("path", intent.dataString)
             .put("type", MediaType.URL.ordinal)
         )
         if (initial) initialSharing = value
@@ -137,7 +135,7 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
 
           JSONArray().put(
             JSONObject()
-              .put("value", path)
+              .put("path", path)
               .put("type", type.ordinal)
               .put("thumbnail", thumbnail)
               .put("duration", duration)
@@ -153,7 +151,7 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
           val thumbnail = getThumbnail(path, type)
           val duration = getDuration(path, type)
           return@mapNotNull JSONObject()
-            .put("value", path)
+            .put("path", path)
             .put("type", type.ordinal)
             .put("thumbnail", thumbnail)
             .put("duration", duration)
@@ -165,17 +163,23 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
   }
 
  private fun getSharingText(intent: Intent?): JSONArray? {
-    if (intent == null) return null
-
+   if (intent == null) return null
     return when (intent.action) {
       Intent.ACTION_SEND -> {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val url = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
         if (text != null) {
           val type = getTypeForTextAndUrl(text)
           JSONArray().put(
             JSONObject()
-              .put("value", text)
+              .put("path", text)
               .put("type", type)
+          )
+        } else if (url != null) {
+          JSONArray().put(
+            JSONObject()
+              .put("path", url)
+              .put("type", 2)
           )
         } else null
       }
@@ -188,7 +192,7 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
           val type = getTypeForTextAndUrl(path)
 
           return@mapNotNull JSONObject()
-            .put("value", path)
+            .put("path", path)
             .put("type", type)
         }?.toList()
         if (value != null) JSONArray(value) else null
