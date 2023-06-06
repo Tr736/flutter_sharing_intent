@@ -176,7 +176,9 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
               .put("type", type)
           )
         } else if (url != null) {
-          if(url.toString().contains("content")){
+          Log.w(TAG,"getSharingText ==>> ${url}")
+
+          if(url.toString().contains("content://")){
             val path = url.let{ MyFileDirectory.getAbsolutePath(applicationContext, it) }
             JSONArray().put(
               JSONObject()
