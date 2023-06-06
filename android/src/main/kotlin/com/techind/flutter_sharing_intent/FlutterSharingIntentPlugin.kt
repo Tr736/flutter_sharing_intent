@@ -176,11 +176,21 @@ class FlutterSharingIntentPlugin: FlutterPlugin, ActivityAware, MethodCallHandle
               .put("type", type)
           )
         } else if (url != null) {
-          JSONArray().put(
-            JSONObject()
-              .put("path", url)
-              .put("type", 2)
-          )
+          if(url.toString().contains("content")){
+            val path = url.let{ MyFileDirectory.getAbsolutePath(applicationContext, it) }
+            JSONArray().put(
+              JSONObject()
+                .put("path", path)
+                .put("type", 4) // file
+            )
+          } else {
+            JSONArray().put(
+              JSONObject()
+                .put("path", url)
+                .put("type", 2)
+            )
+          }
+    
         } else null
       }
       Intent.ACTION_SEND_MULTIPLE -> {
